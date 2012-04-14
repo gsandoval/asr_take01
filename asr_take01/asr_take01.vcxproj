@@ -54,14 +54,17 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)softcomputing;$(SolutionDir)dsp;$(SolutionDir)audio_capture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\audio_capture.lib;$(SolutionDir)$(Configuration)\dsp.lib;$(SolutionDir)$(Configuration)\softcomputing.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="command_recognizer.cpp" />
     <ClCompile Include="file_reader.cpp" />
     <ClCompile Include="online_feature_extractor.cpp" />
     <ClCompile Include="main.cpp" />
@@ -74,6 +77,8 @@
     <ClCompile Include="wave_recorder.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="command_recognizer.h" />
+    <ClInclude Include="feature_listener.h" />
     <ClInclude Include="file_reader.h" />
     <ClInclude Include="online_feature_extractor.h" />
     <ClInclude Include="player.h" />

@@ -13,17 +13,13 @@ namespace asr_take01
 
 	void WaveRecorder::CreateOutputFile(std::string filename)
 	{
-		wchar_t *file = new wchar_t[filename.size() + 1];
-		memset(file, 0, filename.size() + 1);
-		MultiByteToWideChar(CP_ACP, NULL, filename.c_str(), -1, file, filename.size() + 1);
-		file_handle = mmioOpen(file, 0, MMIO_CREATE | MMIO_WRITE);
-		delete[] file;
+		file_handle = mmioOpen(const_cast<char *>(filename.c_str()), 0, MMIO_CREATE | MMIO_WRITE);
 
-		chunk_info.fccType = mmioStringToFOURCC(L"WAVE", 0);
+		chunk_info.fccType = mmioStringToFOURCCA("WAVE", 0);
 		MMRESULT mr = mmioCreateChunk(file_handle, &chunk_info, MMIO_CREATERIFF);
 
 		MMCKINFO wave_fmt;
-		wave_fmt.ckid = mmioStringToFOURCC(L"fmt ", 0);
+		wave_fmt.ckid = mmioStringToFOURCCA("fmt ", 0);
 		wave_fmt.cksize = sizeof(WAVEFORMATEX);
 		mr = mmioCreateChunk(file_handle, &wave_fmt, 0);
 		WAVEFORMATEX header;
@@ -38,7 +34,7 @@ namespace asr_take01
 		mr = mmioAscend(file_handle, &wave_fmt, 0);
 
 		memset(&data_chunk_info, 0, sizeof(MMCKINFO));
-		data_chunk_info.ckid = mmioStringToFOURCC(L"data", 0);
+		data_chunk_info.ckid = mmioStringToFOURCCA("data", 0);
 		//data_chunk_info.cksize = block_size;
 		mr = mmioCreateChunk(file_handle, &data_chunk_info, 0);
 

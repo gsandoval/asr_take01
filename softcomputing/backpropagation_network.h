@@ -55,6 +55,7 @@ namespace softcomputing
 		void SetMaxEpochs(int max_epochs);
 		void SetLearningRate(double learning_rate);
 		void SetMomentum(double momentum);
+		void SetWeights(std::vector<std::vector<std::vector<double> > > weights);
 	private:
 		std::vector<std::vector<Neuron*> > layers;
 		std::vector<ActivationFunction> activation_functions;

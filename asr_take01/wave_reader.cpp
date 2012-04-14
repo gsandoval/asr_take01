@@ -9,17 +9,14 @@ namespace asr_take01
 
 	void WaveReader::OpenFile(string filename)
 	{
-		wchar_t *file = new wchar_t[filename.size() + 1];
-		memset(file, 0, filename.size() + 1);
-		MultiByteToWideChar(CP_ACP, NULL, filename.c_str(), -1, file, filename.size() + 1);
-		file_handle = mmioOpen(file, 0, MMIO_READ);
+		file_handle = mmioOpenA(const_cast<char *>(filename.c_str()), 0, MMIO_READ);
 
 		MMCKINFO chunk_info;
 		memset(&chunk_info, 0, sizeof(MMCKINFO));
 		MMRESULT mr = mmioDescend(file_handle, &chunk_info, 0, MMIO_FINDRIFF);
 
 		MMCKINFO fmt_chunk_info;
-		fmt_chunk_info.ckid = mmioStringToFOURCC(L"fmt", 0);
+		fmt_chunk_info.ckid = mmioStringToFOURCCA("fmt", 0);
 		mr = mmioDescend(file_handle, &fmt_chunk_info, &chunk_info, MMIO_FINDCHUNK);
 		WAVEFORMATEX wave_format;
 		mr = mmioRead(file_handle, (char*) &wave_format, fmt_chunk_info.cksize);
@@ -30,7 +27,7 @@ namespace asr_take01
 
 		mr = mmioAscend(file_handle, &fmt_chunk_info, 0);
 		MMCKINFO data_chunk_info;
-		data_chunk_info.ckid = mmioStringToFOURCC(L"data", 0);
+		data_chunk_info.ckid = mmioStringToFOURCCA("data", 0);
 		mr = mmioDescend(file_handle, &data_chunk_info, &chunk_info, MMIO_FINDCHUNK);
 
 		size = data_chunk_info.cksize;

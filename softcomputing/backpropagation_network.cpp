@@ -149,6 +149,17 @@ namespace softcomputing
 		}
 	}
 
+	void BackPropagationNetwork::SetWeights(std::vector<std::vector<std::vector<double> > > weights)
+	{
+		for (unsigned int i = 1; i < layers.size(); ++i) {
+			for (unsigned int j = 0; j < layers[i].size(); ++j) {
+				for (unsigned int k = 0; k < layers[i - 1].size(); ++k) {
+					layers[i][j]->SetWeight(k, weights[i - 1][j][k]);
+				}
+			}
+		}
+	}
+
 	vector<ActivationFunction> BackPropagationNetwork::ActivationFunctions()
 	{
 		return activation_functions;
