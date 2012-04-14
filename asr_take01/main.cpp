@@ -104,9 +104,18 @@ int main(int argc, char* argv[])
 		int bits_per_sample = reader->BitsPerSample();
 		int samples_per_second = reader->SamplesPerSecond();
 
-		int total_features = 14;
+		int total_features = 16;
 		vector<float *> features;
 		dsp::MFCC mfcc;
+		mfcc.SetSamplingFrequency(samples_per_second);
+		mfcc.SetCepstralCoefficientsNumber(total_features);
+		mfcc.SetFrameLength(samples_per_second / 10 * 1); // 100 milliseconds
+		mfcc.SetFrameShift(samples_per_second / 20 * 1);
+		mfcc.SetFFTFrameLength(1024);
+		//mfcc.SetFFTFrameLength(4096);
+		//mfcc.SetFFTFrameLength(8192);
+		mfcc.SetNoCoefficientZero(true);
+		mfcc.Init();
 		mfcc.Process(wave_data, (unsigned int) wave_size, features);
 		cout.setf(ios::fixed,ios::floatfield);
 		cout.precision(6);
@@ -219,15 +228,39 @@ int main(int argc, char* argv[])
 		reader.Load();
 		vector<vector<double> > apagar = reader.ClassSamples("apagar");
 		vector<vector<double> > prender = reader.ClassSamples("prender");
+		int features_per_sample = 11 * 16;
+		
+		// Normalize them all
+		double max_value = 0;
+		for (unsigned int i = 0; i < apagar.size(); ++i) {
+			for (unsigned int j = 0; j < features_per_sample; ++j) {
+				if (max_value < apagar[i][j]) {
+					max_value = apagar[i][j];
+				}
+				if (max_value < prender[i][j]) {
+					max_value = prender[i][j];
+				}
+			}
+		}
+		for (unsigned int i = 0; i < apagar.size(); ++i) {
+			for (unsigned int j = 0; j < features_per_sample; ++j) {
+				apagar[i][j] /= max_value;
+				prender[i][j] /= max_value;
+			}
+		}
 
-		vector<int> layers; layers.push_back(650); layers.push_back(70); layers.push_back(50); layers.push_back(3);
-		softcomputing::BackPropagationNetwork nn(0.1, 10000, 0.1, layers, 2);
+		vector<int> layers; layers.push_back(176); layers.push_back(90); layers.push_back(45); layers.push_back(3);
+		softcomputing::BackPropagationNetwork nn(layers);
+		nn.SetLearningRate(0.001);
+		nn.SetMaxEpochs(10000);
+		nn.SetMaxError(0.1);
+		nn.SetMomentum(0.9);
 		//nn.SetQuiet(true);
 
 		vector<vector<double> > training_set;
 		vector<vector<double> > expected;
-		vector<double> expected_apagar; expected_apagar.push_back(0.001); expected_apagar.push_back(0.999); expected_apagar.push_back(0.001);
-		vector<double> expected_prender; expected_prender.push_back(0.001); expected_prender.push_back(0.001); expected_prender.push_back(0.999);
+		vector<double> expected_apagar; expected_apagar.push_back(0); expected_apagar.push_back(1); expected_apagar.push_back(0);
+		vector<double> expected_prender; expected_prender.push_back(0); expected_prender.push_back(0); expected_prender.push_back(1);
 		for (unsigned int i = 0; i < apagar.size(); ++i) {
 			if (static_cast<int>(apagar[i].size()) < layers[0]) {
 				for (int j = apagar[i].size(); j < layers[0]; ++j) {
@@ -247,6 +280,25 @@ int main(int argc, char* argv[])
 		}
 		
 		nn.Train(training_set, expected);
+
+		for (unsigned int i = 0; i < training_set.size(); ++i) {
+			vector<double> output = nn.Classify(training_set[i]);
+			cerr << "(";
+			for (unsigned int j = 0; j < output.size(); ++j) {
+				cerr << output[j];
+				if (j != output.size() - 1) {
+					cerr << ", ";
+				}
+			}
+			cerr << ") = (";
+			for (unsigned int j = 0; j < expected[i].size(); ++j) {
+				cerr << static_cast<int>(expected[i][j]);
+				if (j != expected[i].size() - 1) {
+					cerr << ", ";
+				}
+			}
+			cerr << ")" << endl;
+		}
 
 		vector<vector<vector<double> > > weights = nn.Weights();
 		vector<softcomputing::ActivationFunction> activation_functions = nn.ActivationFunctions();

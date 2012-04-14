@@ -32,7 +32,10 @@ int main(int argc, char* argv[])
 	expected_output.push_back(o4); expected_output.push_back(o5); expected_output.push_back(o6);
 	expected_output.push_back(o7); expected_output.push_back(o8);
 
-	softcomputing::BackPropagationNetwork nn(0.001, 100000, 0.3, layer_sizes);
+	softcomputing::BackPropagationNetwork nn(layer_sizes);
+	nn.SetLearningRate(0.3);
+	nn.SetMaxEpochs(100000);
+	nn.SetMaxError(0.001);
 	nn.Train(training_set, expected_output);
 
 	for (unsigned int i = 0; i < training_set.size(); ++i) {

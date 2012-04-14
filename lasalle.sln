@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "etsi_extraction", "etsi_extraction\etsi_extraction.vcxproj", "{0A3028E6-276E-407C-B227-470B2D82FD84}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "softcomputing", "softcomputing\softcomputing.vcxproj", "{7E8D37EB-4B0C-42F7-AD23-BE22028A3133}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "audio_capture", "audio_capture\audio_capture.vcxproj", "{8716D9BF-9AED-40F2-8684-8FC10F09F0B3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asr_take01", "asr_take01\asr_take01.vcxproj", "{B858D004-5675-4D1D-8B59-480863642640}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dsp", "dsp\dsp.vcxproj", "{ABD733DD-D158-42D1-AFB7-9736C2BD3A45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,6 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0A3028E6-276E-407C-B227-470B2D82FD84}.Debug|Win32.ActiveCfg = Debug|Win32
-		{0A3028E6-276E-407C-B227-470B2D82FD84}.Debug|Win32.Build.0 = Debug|Win32
-		{0A3028E6-276E-407C-B227-470B2D82FD84}.Release|Win32.ActiveCfg = Release|Win32
-		{0A3028E6-276E-407C-B227-470B2D82FD84}.Release|Win32.Build.0 = Release|Win32
 		{7E8D37EB-4B0C-42F7-AD23-BE22028A3133}.Debug|Win32.ActiveCfg = Debug|Win32
 		{7E8D37EB-4B0C-42F7-AD23-BE22028A3133}.Debug|Win32.Build.0 = Debug|Win32
 		{7E8D37EB-4B0C-42F7-AD23-BE22028A3133}.Release|Win32.ActiveCfg = Release|Win32
@@ -31,6 +27,10 @@ Global
 		{B858D004-5675-4D1D-8B59-480863642640}.Debug|Win32.Build.0 = Debug|Win32
 		{B858D004-5675-4D1D-8B59-480863642640}.Release|Win32.ActiveCfg = Release|Win32
 		{B858D004-5675-4D1D-8B59-480863642640}.Release|Win32.Build.0 = Release|Win32
+		{ABD733DD-D158-42D1-AFB7-9736C2BD3A45}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ABD733DD-D158-42D1-AFB7-9736C2BD3A45}.Debug|Win32.Build.0 = Debug|Win32
+		{ABD733DD-D158-42D1-AFB7-9736C2BD3A45}.Release|Win32.ActiveCfg = Release|Win32
+		{ABD733DD-D158-42D1-AFB7-9736C2BD3A45}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -20,8 +20,6 @@ namespace asr_take01
 	void TrainingSetReader::Load()
 	{
 		ostringstream oss;
-		const int line_size = 1024;
-		char line[line_size];
 		double elem;
 		for (unsigned int i = 0; i < classes.size(); ++i) {
 			for (int j = 1; j <= samples_per_class; ++j) {

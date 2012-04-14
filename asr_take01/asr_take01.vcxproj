@@ -41,11 +41,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)softcomputing;$(SolutionDir)etsi_extraction;$(SolutionDir)audio_capture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)softcomputing;$(SolutionDir)dsp;$(SolutionDir)audio_capture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)$(Configuration)\audio_capture.lib;$(SolutionDir)$(Configuration)\etsi_extraction.lib;$(SolutionDir)$(Configuration)\softcomputing.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\audio_capture.lib;$(SolutionDir)$(Configuration)\dsp.lib;$(SolutionDir)$(Configuration)\softcomputing.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

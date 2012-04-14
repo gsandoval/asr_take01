@@ -10,7 +10,8 @@ namespace softcomputing
 {
 	using namespace std;
 
-	BackPropagationNetwork::Neuron::Neuron(ActivationFunction _activation_function) : activation_function(_activation_function)
+	BackPropagationNetwork::Neuron::Neuron(ActivationFunction _activation_function) 
+		: activation_function(_activation_function), last_weight_update(0.0)
 	{
 
 	}
@@ -75,6 +76,16 @@ namespace softcomputing
 		return weights;
 	}
 
+	double BackPropagationNetwork::Neuron::LastWeightUpdate()
+	{
+		return last_weight_update;
+	}
+
+	void BackPropagationNetwork::Neuron::SetLastWeightUpdate(double weight_update)
+	{
+		this->last_weight_update = weight_update;
+	}
+
 	void BackPropagationNetwork::Neuron::Fire()
 	{
 		if (activation_function == Linear) {
@@ -92,9 +103,28 @@ namespace softcomputing
 		}
 	}
 
-	BackPropagationNetwork::BackPropagationNetwork(double _max_error, long long _max_epochs, double _learning_rate, 
-		vector<int> layer_sizes, double weight_init_magnitud, vector<ActivationFunction> activation_functions) 
-		: max_error(_max_error), max_epochs(_max_epochs),  learning_rate(_learning_rate), quiet(false)
+	void BackPropagationNetwork::SetMaxError(double max_error)
+	{
+		this->max_error = max_error;
+	}
+
+	void BackPropagationNetwork::SetMaxEpochs(int max_epochs)
+	{
+		this->max_epochs = max_epochs;
+	}
+
+	void BackPropagationNetwork::SetLearningRate(double learning_rate)
+	{
+		this->learning_rate = learning_rate;
+	}
+
+	void BackPropagationNetwork::SetMomentum(double momentum)
+	{
+		this->momentum;
+	}
+
+	BackPropagationNetwork::BackPropagationNetwork(vector<int> layer_sizes, double weight_init_magnitud, 
+		vector<ActivationFunction> activation_functions) : quiet(false), momentum(0)
 	{
 		srand((unsigned int) time(NULL));
 		
@@ -168,7 +198,9 @@ namespace softcomputing
 				Neuron *n = layers[i][j];
 				for (unsigned int k = 0; k < layers[i - 1].size(); ++k) {
 					Neuron *prev_n = layers[i - 1][k];
-					n->SetWeight(k, n->Weight(k) + learning_rate * n->Delta() * n->OutputDerivative() * prev_n->Output());
+					double weight_update = learning_rate * n->Delta() * n->OutputDerivative() * prev_n->Output() + momentum * n->LastWeightUpdate();
+					n->SetLastWeightUpdate(weight_update);
+					n->SetWeight(k, n->Weight(k) + weight_update);
 				}
 			}
 		}
