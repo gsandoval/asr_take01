@@ -20,7 +20,7 @@ namespace asr_take01
 	public:
 		CommandRecognizer(softcomputing::BackPropagationNetwork *nn);
 		virtual ~CommandRecognizer();
-		void FeatureReady(std::vector<double> feature);
+		bool FeatureReady(std::vector<double> feature);
 	};
 }
 

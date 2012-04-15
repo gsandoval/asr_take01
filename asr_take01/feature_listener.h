@@ -10,7 +10,7 @@ namespace asr_take01
 	{
 	public:
 		virtual ~FeatureListener() {}
-		virtual void FeatureReady(std::vector<double> feature) = 0;
+		virtual bool FeatureReady(std::vector<double> feature) = 0;
 	};
 }
 

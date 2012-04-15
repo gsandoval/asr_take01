@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ const int samples_per_second = 8000;
 audiocapture::AudioController* CreateAudioController(int channels, int bits_per_sample, int samples_per_second)
 {
 	int buffer_size = (samples_per_second * channels * (bits_per_sample / 8)) << 1;
-	audiocapture::AudioController *ac = new audiocapture::AudioController(channels, samples_per_second, bits_per_sample, buffer_size);
+	audiocapture::AudioController *ac = new audiocapture::AudioController(channels, samples_per_second, bits_per_sample, 5, buffer_size);
 	return ac;
 }
 
@@ -211,8 +212,8 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 		ifstream file(argv[2], ios::in);
-		asr_take01::OnlineFeatureExtractor feature_extractor(16, channels, bits_per_sample, samples_per_second);
 		audiocapture::AudioController *ac = CreateAudioController(channels, bits_per_sample, samples_per_second);
+		asr_take01::OnlineFeatureExtractor feature_extractor(16, channels, bits_per_sample, samples_per_second, ac->BufferSize());
 		ac->AddRawAudioListener(&feature_extractor);
 		
 		int layer_count;
@@ -335,16 +336,7 @@ int main(int argc, char* argv[])
 		int features_per_sample = 11 * 16;
 		
 		// Normalize them all
-		double max_value = 0;
-		for (unsigned int k = 0; k < class_samples.size(); ++k) {
-			for (int i = 0; i < samples_per_class; ++i) {
-				for (int j = 0; j < features_per_sample; ++j) {
-					if (max_value < class_samples[k][i][j]) {
-						max_value = class_samples[k][i][j];
-					}
-				}
-			}
-		}
+		double max_value = 30;
 		for (unsigned int k = 0; k < class_samples.size(); ++k) {
 			for (int i = 0; i < samples_per_class; ++i) {
 				for (int j = 0; j < features_per_sample; ++j) {
@@ -353,9 +345,9 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		vector<int> layers; layers.push_back(176); layers.push_back(90); layers.push_back(45); layers.push_back(3);
+		vector<int> layers; layers.push_back(176); layers.push_back(90); layers.push_back(45); layers.push_back(classes.size());
 		softcomputing::BackPropagationNetwork nn(layers);
-		nn.SetLearningRate(0.1);
+		nn.SetLearningRate(0.6);
 		nn.SetMaxEpochs(10000);
 		nn.SetMaxError(0.001);
 		nn.SetMomentum(0.9);
@@ -369,12 +361,8 @@ int main(int argc, char* argv[])
 			for (unsigned int k = 0; k < class_samples.size(); ++k) {
 				training_set.push_back(class_samples[k][i]);
 				vector<double> expected_output;
-				for (unsigned int j = 0; j < layers[layers.size() - 1]; ++j) {
-					if (j == k) {
-						expected_output.push_back(1);
-					} else {
-						expected_output.push_back(0);
-					}
+				for (int j = 0; j < layers[layers.size() - 1]; ++j) {
+					expected_output.push_back(k == j? 1 : 0);
 				}
 				expected.push_back(expected_output);
 			}

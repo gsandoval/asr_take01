@@ -13,7 +13,7 @@ namespace asr_take01
 
 	void WaveRecorder::CreateOutputFile(std::string filename)
 	{
-		file_handle = mmioOpen(const_cast<char *>(filename.c_str()), 0, MMIO_CREATE | MMIO_WRITE);
+		file_handle = mmioOpenA(const_cast<char *>(filename.c_str()), 0, MMIO_CREATE | MMIO_WRITE);
 
 		chunk_info.fccType = mmioStringToFOURCCA("WAVE", 0);
 		MMRESULT mr = mmioCreateChunk(file_handle, &chunk_info, MMIO_CREATERIFF);

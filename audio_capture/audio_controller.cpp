@@ -25,9 +25,9 @@ namespace audiocapture
 		}
 	}
 
-	AudioController::AudioController(int _channels, int _samples_per_second, int _bits_per_sample, int _buffer_size) 
+	AudioController::AudioController(int _channels, int _samples_per_second, int _bits_per_sample, int _buffer_count, int _buffer_size) 
 		: capturing(false), channels(_channels), samples_per_second(_samples_per_second), bits_per_sample(_bits_per_sample),
-		buffer_size(_buffer_size)
+		buffer_size(_buffer_size), buffer_count(_buffer_count)
 	{
 	}
 
@@ -36,6 +36,11 @@ namespace audiocapture
 		for (unsigned int i = 0; i < devices.size(); ++i) {
 			delete devices[i];
 		}
+	}
+
+	int AudioController::BufferSize()
+	{
+		return buffer_size;
 	}
 
 	void AudioController::AddRawAudioListener(RawAudioListener *listener)
@@ -73,7 +78,7 @@ namespace audiocapture
 	{
 		MMRESULT mr;
 		WAVEHDR *buffer;
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < buffer_count; ++i) {
 			buffer = (WAVEHDR *) malloc(sizeof(WAVEHDR));
 			buffer->dwBufferLength = buffer_size;
 			buffer->lpData = new char[buffer->dwBufferLength];

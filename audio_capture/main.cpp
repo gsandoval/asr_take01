@@ -28,11 +28,11 @@ public:
 		file_handle = mmioOpenW(file, 0, MMIO_CREATE | MMIO_WRITE);
 		delete[] file;
 
-		chunk_info.fccType = mmioStringToFOURCC("WAVE", 0);
+		chunk_info.fccType = mmioStringToFOURCCA("WAVE", 0);
 		MMRESULT mr = mmioCreateChunk(file_handle, &chunk_info, MMIO_CREATERIFF);
 
 		MMCKINFO wave_fmt;
-		wave_fmt.ckid = mmioStringToFOURCC("fmt ", 0);
+		wave_fmt.ckid = mmioStringToFOURCCA("fmt ", 0);
 		wave_fmt.cksize = sizeof(WAVEFORMATEX);
 		mr = mmioCreateChunk(file_handle, &wave_fmt, 0);
 		WAVEFORMATEX header;
@@ -47,7 +47,7 @@ public:
 		mr = mmioAscend(file_handle, &wave_fmt, 0);
 
 		memset(&data_chunk_info, 0, sizeof(MMCKINFO));
-		data_chunk_info.ckid = mmioStringToFOURCC("data", 0);
+		data_chunk_info.ckid = mmioStringToFOURCCA("data", 0);
 		//data_chunk_info.cksize = block_size;
 		mr = mmioCreateChunk(file_handle, &data_chunk_info, 0);
 
@@ -76,7 +76,7 @@ audiocapture::AudioController* CreateAudioController()
 	int bits_per_sample = 8;
 	int samples_per_second = 8000;
 	int buffer_size = (samples_per_second * channels * (bits_per_sample / 8)) << 1;
-	audiocapture::AudioController *ac = new audiocapture::AudioController(channels, samples_per_second, bits_per_sample, buffer_size);
+	audiocapture::AudioController *ac = new audiocapture::AudioController(channels, samples_per_second, bits_per_sample, 3, buffer_size);
 	return ac;
 }
 

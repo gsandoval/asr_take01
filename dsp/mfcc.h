@@ -41,6 +41,7 @@ namespace dsp
 		void SetNoCoefficientZero(bool no_coefficient_zero);
 		void SetNoLogEnergy(bool no_log_energy);
 		void Process(char *block, int block_size, std::vector<float *> &cep_coeffs);
+		//void Process(Buffer<char> *buffer, std::vector<float *> &cep_coeffs);
 	};
 }
 

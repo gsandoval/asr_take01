@@ -16,9 +16,10 @@ namespace audiocapture
 	class AudioController
 	{
 	public:
-		AudioController(int channels, int samples_per_second, int bits_per_sample, int buffer_size);
+		AudioController(int channels, int samples_per_second, int bits_per_sample, int buffer_count, int buffer_size);
 		virtual ~AudioController();
 		std::vector<AudioDevice*> ListDevices();
+		int BufferSize();
 		bool SelectDevice(AudioDevice*);
 		bool Start();
 		bool Stop();
@@ -33,6 +34,7 @@ namespace audiocapture
 		int samples_per_second;
 		int bits_per_sample;
 		int buffer_size;
+		int buffer_count;
 		HWAVEIN wave_in_handle;
 		//HWAVEOUT wave_out_handle;
 		void AddBuffer(WAVEHDR *buffer);

@@ -5,6 +5,7 @@
 #include "raw_audio_listener.h"
 
 #include <vector>
+#include <Windows.h>
 
 namespace dsp
 {
@@ -19,17 +20,27 @@ namespace asr_take01
 	{
 	private:
 		dsp::MFCC *mfcc;
-		bool running;
+		bool running, stopped;
 		int channels;
 		int bits_per_sample;
 		int samples_per_second;
 		std::vector<FeatureListener *> listeners;
 		int feature_count;
+		int buffer_size;
+		void *thread_handle;
+		void *queue_wait;
+		unsigned long thread_id;
+		char** queue;
+		int* queue_size;
+		int queue_top, queue_bottom;
+		CRITICAL_SECTION queue_mutex;
+		int QueueSize();
 	public:
-		OnlineFeatureExtractor(int feature_count, int channels, int bits_per_sample, int samples_per_second);
+		OnlineFeatureExtractor(int feature_count, int channels, int bits_per_sample, int samples_per_second, int buffer_size);
 		virtual ~OnlineFeatureExtractor();
 		void BlockRead(char *block, int block_size);
 		void AddFeatureListener(FeatureListener *listener);
+		void Run();
 	};
 }
 

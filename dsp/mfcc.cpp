@@ -158,7 +158,7 @@ namespace dsp
 		bool must_swap = (swap_specified || native_byte_order == IEEE_LE);
 
 		int block_size = _block_size / 2;
-		float *block = new float[_block_size];
+		float *block = new float[block_size];
 		for (int i = 0; i < block_size; ++i) {
 			unsigned char a = _block[i * 2];
 			unsigned char b = _block[i * 2 + 1];
@@ -170,7 +170,7 @@ namespace dsp
 			}
 			block[i] = (float) s;
 		}
-
+		
 		float log_energy;
 		int frame_count = 0;
 		int read_bytes = 0;

@@ -60,12 +60,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="buffer.cpp" />
     <ClCompile Include="FEfunc.c" />
     <ClCompile Include="fileio.c" />
     <ClCompile Include="FrontEnd.c" />
     <ClCompile Include="mfcc.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="buffer.h" />
     <ClInclude Include="FEfunc.h" />
     <ClInclude Include="fileio.h" />
     <ClInclude Include="mfcc.h" />
