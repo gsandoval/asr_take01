@@ -61,6 +61,7 @@ namespace asr_take01
 						}
 					}
 					for (unsigned int j = 0; j < listeners.size(); ++j) {
+						//listeners[j]->FeatureReady(feature);
 						found_something = listeners[j]->FeatureReady(feature);
 					}
 				}
@@ -78,40 +79,15 @@ namespace asr_take01
 				bottom = 0;
 				top = keep;
 			}
-			/*
-			for (int d = 0; d < block_size / offset; ++d) {
-				vector<float *> cep_coeffs;
-				if (block_size - (d * offset) < 9600) {
-					break;
-				}
-				mfcc->Process(block + (d * offset), block_size - (d * offset), cep_coeffs);
-				if (coeff_needed <= cep_coeffs.size()) {
-					for (unsigned int i = 0; i < cep_coeffs.size() - coeff_needed; ++i) {
-						vector<double> feature;
-						for (unsigned int j = 0; j < coeff_needed; ++j) {
-							for (int k = 0; k < feature_count; ++k) {
-								feature.push_back(cep_coeffs[i + j][k]);
-							}
-						}
-						for (unsigned int j = 0; j < listeners.size(); ++j) {
-							listeners[j]->FeatureReady(feature);
-						}
-					}
-				}
-				for (unsigned int i = 0; i < cep_coeffs.size(); ++i) {
-					delete[] cep_coeffs[i];
-				}
-			}
-			*/
 		}
 		delete[] working_buffer;
 
 		stopped = true;
 	}
 
-	OnlineFeatureExtractor::OnlineFeatureExtractor(int _feature_count, int _channels, int _bits_per_sample, int _samples_per_second, int _buffer_size) 
-		: channels(_channels), bits_per_sample(_bits_per_sample), samples_per_second(_samples_per_second), feature_count(_feature_count),
-		running(false), stopped(false), buffer_size(_buffer_size)
+	OnlineFeatureExtractor::OnlineFeatureExtractor(int _feature_count, int _channels, int _bits_per_sample, int _samples_per_second, 
+		int _buffer_size, int fft_length, int mel_filter_bank_size) : channels(_channels), bits_per_sample(_bits_per_sample), 
+		samples_per_second(_samples_per_second), feature_count(_feature_count), running(false), stopped(false), buffer_size(_buffer_size)
 	{
 		mfcc = new dsp::MFCC();
 		mfcc->SetCepstralCoefficientsNumber(_feature_count);
@@ -119,7 +95,8 @@ namespace asr_take01
 		mfcc->SetSamplingFrequency(samples_per_second);
 		mfcc->SetFrameLength(samples_per_second / 10 * 1);
 		mfcc->SetFrameShift(samples_per_second / 20 * 1);
-		mfcc->SetFFTFrameLength(1024);
+		mfcc->SetFFTFrameLength(fft_length);
+		mfcc->SetMelFilterBankSize(mel_filter_bank_size);
 		mfcc->Init();
 
 		queue_top = queue_bottom = 0;

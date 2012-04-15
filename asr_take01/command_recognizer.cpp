@@ -25,7 +25,7 @@ namespace asr_take01
 		vector<double> output = nn->Classify(feature);
 		vector<int> command;
 		for (unsigned int i = 0; i < output.size(); ++i) {
-			command.push_back(static_cast<int>(output[i] + 0.1));
+			command.push_back(static_cast<int>(output[i] + 0.05));
 		}
 
 		bool found_something = false;

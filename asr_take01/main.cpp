@@ -20,6 +20,8 @@ using namespace std;
 const int channels = 1;
 const int bits_per_sample = 16;
 const int samples_per_second = 8000;
+const int mel_filter_bank_size = 23;
+const int fft_length = 4096;
 
 audiocapture::AudioController* CreateAudioController(int channels, int bits_per_sample, int samples_per_second)
 {
@@ -111,11 +113,12 @@ int main(int argc, char* argv[])
 		dsp::MFCC mfcc;
 		mfcc.SetSamplingFrequency(samples_per_second);
 		mfcc.SetCepstralCoefficientsNumber(total_features);
-		mfcc.SetFrameLength(samples_per_second / 10 * 1); // 100 milliseconds
-		mfcc.SetFrameShift(samples_per_second / 20 * 1);
-		mfcc.SetFFTFrameLength(1024);
+		mfcc.SetFrameLength(samples_per_second / 10 * 6); // 100 milliseconds
+		mfcc.SetFrameShift(samples_per_second / 20 * 2);
+		//mfcc.SetFFTFrameLength(1024);
+		mfcc.SetMelFilterBankSize(mel_filter_bank_size);
 		//mfcc.SetFFTFrameLength(4096);
-		//mfcc.SetFFTFrameLength(8192);
+		mfcc.SetFFTFrameLength(fft_length);
 		mfcc.SetNoCoefficientZero(true);
 		mfcc.Init();
 		mfcc.Process(wave_data, (unsigned int) wave_size, features);
@@ -213,7 +216,7 @@ int main(int argc, char* argv[])
 		}
 		ifstream file(argv[2], ios::in);
 		audiocapture::AudioController *ac = CreateAudioController(channels, bits_per_sample, samples_per_second);
-		asr_take01::OnlineFeatureExtractor feature_extractor(16, channels, bits_per_sample, samples_per_second, ac->BufferSize());
+		asr_take01::OnlineFeatureExtractor feature_extractor(16, channels, bits_per_sample, samples_per_second, ac->BufferSize(), fft_length, mel_filter_bank_size);
 		ac->AddRawAudioListener(&feature_extractor);
 		
 		int layer_count;
@@ -260,55 +263,6 @@ int main(int argc, char* argv[])
 		
 		delete ac;
 		delete feature_listener;
-
-		/*
-		asr_take01::TrainingSetReader reader;
-		reader.SetDirectory("..\\Debug\\features\\");
-		vector<string> classes; classes.push_back("apagar"); classes.push_back("prender");
-		reader.SetClassNames(classes);
-		reader.SetSamplesPerClass(20);
-		reader.Load();
-		vector<vector<double> > apagar = reader.ClassSamples("apagar");
-		vector<vector<double> > prender = reader.ClassSamples("prender");
-		int features_per_sample = 11 * 16;
-		
-		// Normalize them all
-		double max_value = 0;
-		for (unsigned int i = 0; i < apagar.size(); ++i) {
-			for (unsigned int j = 0; j < features_per_sample; ++j) {
-				if (max_value < apagar[i][j]) {
-					max_value = apagar[i][j];
-				}
-				if (max_value < prender[i][j]) {
-					max_value = prender[i][j];
-				}
-			}
-		}
-		for (unsigned int i = 0; i < apagar.size(); ++i) {
-			for (unsigned int j = 0; j < features_per_sample; ++j) {
-				apagar[i][j] /= max_value;
-				prender[i][j] /= max_value;
-			}
-		}
-		vector<vector<double> > training_set;
-		for (unsigned int i = 0; i < apagar.size(); ++i) {
-			training_set.push_back(apagar[i]);
-		}
-		for (unsigned int i = 0; i < prender.size(); ++i) {
-			training_set.push_back(prender[i]);
-		}
-		for (unsigned int i = 0; i < training_set.size(); ++i) {
-			vector<double> output = nn.Classify(training_set[i]);
-			cerr << "(";
-			for (unsigned int j = 0; j < output.size(); ++j) {
-				cerr << static_cast<int>(output[j] + 0.08);
-				if (j != output.size() - 1) {
-					cerr << ", ";
-				}
-			}
-			cerr << ")" << endl;
-		}
-		*/
 	} else if (strcmp(argv[1], "-train") == 0) {
 		if (argc < 4) {
 			if (argc < 3) {
@@ -334,6 +288,7 @@ int main(int argc, char* argv[])
 			class_samples.push_back(reader.ClassSamples(classes[i]));
 		}
 		int features_per_sample = 11 * 16;
+		//int features_per_sample = 1 * 16;
 		
 		// Normalize them all
 		double max_value = 30;
@@ -345,9 +300,10 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		vector<int> layers; layers.push_back(176); layers.push_back(90); layers.push_back(45); layers.push_back(classes.size());
+		// 90, 45
+		vector<int> layers; layers.push_back(features_per_sample); layers.push_back(10); layers.push_back(5); layers.push_back(classes.size());
 		softcomputing::BackPropagationNetwork nn(layers);
-		nn.SetLearningRate(0.6);
+		nn.SetLearningRate(0.9);
 		nn.SetMaxEpochs(10000);
 		nn.SetMaxError(0.001);
 		nn.SetMomentum(0.9);

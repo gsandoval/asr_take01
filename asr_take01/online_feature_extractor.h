@@ -36,7 +36,8 @@ namespace asr_take01
 		CRITICAL_SECTION queue_mutex;
 		int QueueSize();
 	public:
-		OnlineFeatureExtractor(int feature_count, int channels, int bits_per_sample, int samples_per_second, int buffer_size);
+		OnlineFeatureExtractor(int feature_count, int channels, int bits_per_sample, int samples_per_second, int buffer_size,
+			int fft_length, int mel_filter_bank_size);
 		virtual ~OnlineFeatureExtractor();
 		void BlockRead(char *block, int block_size);
 		void AddFeatureListener(FeatureListener *listener);

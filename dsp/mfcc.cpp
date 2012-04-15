@@ -43,7 +43,7 @@ namespace dsp
 	const int NUM_CEP_COEFF = 13;			/* c1..c12 + c0 */
 
 	MFCC::MFCC() : native_byte_order(IEEE_LE), no_coefficient_zero(false), no_log_energy(false), swap_specified(false),
-		frame_length(0), frame_shift(0), fft_length(0)
+		frame_length(0), frame_shift(0), fft_length(0), mel_filter_bank_size(NUM_CHANNELS)
 	{
 		energy_floor_fb = exp(ENERGYFLOOR_FB);
 		energy_floor_log_e = exp(ENERGYFLOOR_logE);
@@ -53,6 +53,11 @@ namespace dsp
 	void MFCC::SetCepstralCoefficientsNumber(int cepstral_coefficient_number)
 	{
 		this->cepstral_coefficient_number = cepstral_coefficient_number;
+	}
+
+	void MFCC::SetMelFilterBankSize(int mel_filter_bank_size)
+	{
+		this->mel_filter_bank_size = mel_filter_bank_size;
 	}
 
 	void MFCC::SetSamplingFrequency(int sampling_frequency)
@@ -106,9 +111,9 @@ namespace dsp
 
 		first_window = (FFT_Window *) malloc(sizeof(FFT_Window));
 		InitializeHamming(float_window, frame_length);
-		InitFFTWindows(first_window, starting_frequency, (float) sampling_frequency, fft_length, NUM_CHANNELS);
+		InitFFTWindows(first_window, starting_frequency, (float) sampling_frequency, fft_length, mel_filter_bank_size);
 		ComputeTriangle(first_window);
-		dct_matrix = InitDCTMatrix(cepstral_coefficient_number, NUM_CHANNELS);
+		dct_matrix = InitDCTMatrix(cepstral_coefficient_number, mel_filter_bank_size);
 	}
 
 	MFCC::~MFCC()
@@ -222,7 +227,7 @@ namespace dsp
 			/*-----*/
 			/* Zero padding */
 			for (int i = frame_length; i < fft_length; i++) {
-				float_buffer[i] = 0.0;
+				float_buffer[i] = 0.0f;
 			}
 
 			/* Real valued, in-place split-radix FFT */
@@ -244,7 +249,7 @@ namespace dsp
 			/*-------------------------------*/
 			/* Natural logarithm computation */
 			/*-------------------------------*/
-			for (int i = 0; i < NUM_CHANNELS; ++i) {
+			for (int i = 0; i < mel_filter_bank_size; ++i) {
 				if (float_buffer[i] < energy_floor_fb) {
 					float_buffer[i] = ENERGYFLOOR_FB;
 				} else {
@@ -255,12 +260,12 @@ namespace dsp
 			/*---------------------------*/
 			/* Discrete Cosine Transform */
 			/*---------------------------*/
-			DCT(float_buffer, dct_matrix, cepstral_coefficient_number, NUM_CHANNELS);
+			DCT(float_buffer, dct_matrix, cepstral_coefficient_number, mel_filter_bank_size);
 
 			/*--------------------------------------*/
 			/* Append logE after c0 or overwrite c0 */
 			/*--------------------------------------*/
-			float_buffer[NUM_CHANNELS + cepstral_coefficient_number - (no_coefficient_zero ? 1:0)] = log_energy; 
+			float_buffer[mel_filter_bank_size + cepstral_coefficient_number - (no_coefficient_zero ? 1:0)] = log_energy; 
 
 			/*---------------*/
 			/* Output result */
@@ -268,7 +273,7 @@ namespace dsp
 			int coeff_number = (int) (cepstral_coefficient_number - (no_coefficient_zero ? 1:0) + (no_log_energy ? 0:1));
 			float *cep_coeff = new float[coeff_number];
 			for (int i = 0; i < coeff_number; ++i) {
-				cep_coeff[i] = float_buffer[NUM_CHANNELS + i];
+				cep_coeff[i] = float_buffer[mel_filter_bank_size + i];
 			}
 			cep_coeffs.push_back(cep_coeff);
 			frame_count++;

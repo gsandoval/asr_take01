@@ -19,6 +19,7 @@ namespace dsp
 		bool swap_specified;
 		float starting_frequency;
 		float energy_floor_fb, energy_floor_log_e;
+		int mel_filter_bank_size;
 		int frame_length, frame_shift, fft_length;
 		float *circular_float_buffer;
 		int cfb_size, cfb_pointer;
@@ -37,6 +38,7 @@ namespace dsp
 		void SetFrameShift(int frame_shift);
 		void SetFrameLength(int window_size);
 		void SetFFTFrameLength(int window_size);
+		void SetMelFilterBankSize(int mel_filter_bank_size);
 		void SetCepstralCoefficientsNumber(int cepstral_coefficient_number);
 		void SetNoCoefficientZero(bool no_coefficient_zero);
 		void SetNoLogEnergy(bool no_log_energy);
