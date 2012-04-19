@@ -5,6 +5,7 @@
 #include "feature_listener.h"
 
 #include <vector>
+#include <string>
 
 namespace softcomputing
 {
@@ -17,10 +18,13 @@ namespace asr_take01
 	{
 	private:
 		softcomputing::BackPropagationNetwork *nn;
+		std::vector<std::string> class_names;
+		std::vector<std::vector<double> > class_values;
 	public:
 		CommandRecognizer(softcomputing::BackPropagationNetwork *nn);
 		virtual ~CommandRecognizer();
 		bool FeatureReady(std::vector<double> feature);
+		void SetOutputClasses(std::vector<std::string> class_names, std::vector<std::vector<double> > class_values);
 	};
 }
 

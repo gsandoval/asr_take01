@@ -43,7 +43,7 @@ namespace dsp
 	const int NUM_CEP_COEFF = 13;			/* c1..c12 + c0 */
 
 	MFCC::MFCC() : native_byte_order(IEEE_LE), no_coefficient_zero(false), no_log_energy(false), swap_specified(false),
-		frame_length(0), frame_shift(0), fft_length(0), mel_filter_bank_size(NUM_CHANNELS)
+		frame_length(0), frame_shift(0), fft_length(0), mel_filter_bank_size(NUM_CHANNELS), minimum_energy(0)
 	{
 		energy_floor_fb = exp(ENERGYFLOOR_FB);
 		energy_floor_log_e = exp(ENERGYFLOOR_logE);
@@ -81,6 +81,11 @@ namespace dsp
 			frame_shift = FRAME_SHIFT_3;
 			fft_length = FFT_LENGTH_3;
 		}
+	}
+
+	void MFCC::SetMinimumEnergy(float minimum_energy)
+	{
+		this->minimum_energy = minimum_energy;
 	}
 
 	void MFCC::SetFrameShift(int frame_shift)
@@ -176,7 +181,7 @@ namespace dsp
 			block[i] = (float) s;
 		}
 		
-		float log_energy;
+		float log_energy, energy;
 		int frame_count = 0;
 		int read_bytes = 0;
 
@@ -196,16 +201,19 @@ namespace dsp
 			/*------------------*/
 			/* logE computation */
 			/*------------------*/
-			log_energy = 0.0;
+			energy = 0.0;
 			for (int i = 0; i < frame_length; ++i) {
 				int ind = (cfb_pointer + i + 3) % cfb_size;
-				log_energy += circular_float_buffer[ind] * circular_float_buffer[ind];
+				energy += circular_float_buffer[ind] * circular_float_buffer[ind];
 			}
 
-			if (log_energy < energy_floor_log_e) {
+			if (minimum_energy > 0 && energy < minimum_energy) {
+				continue;
+			}
+			if (energy < energy_floor_log_e) {
 				log_energy = ENERGYFLOOR_logE;
 			} else {
-				log_energy = log(log_energy);
+				log_energy = log(energy);
 			}
 	    
 			/*-----------------------------------------------------*/

@@ -31,7 +31,7 @@ namespace asr_take01
 
 		int offset = 200;
 		int frame_size = 9600;
-		unsigned int coeff_needed = 11;
+		unsigned int coeff_needed = vectors_per_sample;
 		char *working_buffer = new char[buffer_size * (QUEUE_SIZE + 2)];
 		int bottom = 0;
 		int top = 0;
@@ -86,17 +86,19 @@ namespace asr_take01
 	}
 
 	OnlineFeatureExtractor::OnlineFeatureExtractor(int _feature_count, int _channels, int _bits_per_sample, int _samples_per_second, 
-		int _buffer_size, int fft_length, int mel_filter_bank_size) : channels(_channels), bits_per_sample(_bits_per_sample), 
-		samples_per_second(_samples_per_second), feature_count(_feature_count), running(false), stopped(false), buffer_size(_buffer_size)
+		int _buffer_size, int fft_length, int mel_filter_bank_size, int frame_length, int frame_shift, int _vectors_per_sample) 
+		: channels(_channels), bits_per_sample(_bits_per_sample), samples_per_second(_samples_per_second), feature_count(_feature_count), 
+		running(false), stopped(false), buffer_size(_buffer_size), vectors_per_sample(_vectors_per_sample)
 	{
 		mfcc = new dsp::MFCC();
 		mfcc->SetCepstralCoefficientsNumber(_feature_count);
 		mfcc->SetNoCoefficientZero(true);
 		mfcc->SetSamplingFrequency(samples_per_second);
-		mfcc->SetFrameLength(samples_per_second / 10 * 1);
-		mfcc->SetFrameShift(samples_per_second / 20 * 1);
+		mfcc->SetFrameLength(frame_length);
+		mfcc->SetFrameShift(frame_shift);
 		mfcc->SetFFTFrameLength(fft_length);
 		mfcc->SetMelFilterBankSize(mel_filter_bank_size);
+		mfcc->SetMinimumEnergy(100000000000);
 		mfcc->Init();
 
 		queue_top = queue_bottom = 0;

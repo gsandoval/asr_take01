@@ -28,6 +28,7 @@ namespace dsp
 		float *dct_matrix;
 		FFT_Window_tag *first_window;
 		int cepstral_coefficient_number;
+		float minimum_energy;
 		int ReadBlock(float *block, int block_pos, int block_size, float *float_buffer, int buffer_size, 
 			int buffer_pointer, int samples);
 	public:
@@ -42,6 +43,7 @@ namespace dsp
 		void SetCepstralCoefficientsNumber(int cepstral_coefficient_number);
 		void SetNoCoefficientZero(bool no_coefficient_zero);
 		void SetNoLogEnergy(bool no_log_energy);
+		void SetMinimumEnergy(float minimum_energy);
 		void Process(char *block, int block_size, std::vector<float *> &cep_coeffs);
 		//void Process(Buffer<char> *buffer, std::vector<float *> &cep_coeffs);
 	};

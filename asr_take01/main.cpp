@@ -22,6 +22,10 @@ const int bits_per_sample = 16;
 const int samples_per_second = 8000;
 const int mel_filter_bank_size = 23;
 const int fft_length = 4096;
+const int frame_length = samples_per_second / 10 * 4;
+const int frame_shift = samples_per_second / 20 * 2;
+const int cepstrum_coefficients = 16;
+const int vectors_per_sample = 3;
 
 audiocapture::AudioController* CreateAudioController(int channels, int bits_per_sample, int samples_per_second)
 {
@@ -69,9 +73,7 @@ int main(int argc, char* argv[])
 
 		ac->AddRawAudioListener(recorder);
 	
-		//PrintDevices(ac);
 		int selection;
-		//cin >> selection;
 		selection = 0;
 		ac->SelectDevice(ac->ListDevices()[selection]);
 	
@@ -108,16 +110,13 @@ int main(int argc, char* argv[])
 		int bits_per_sample = reader->BitsPerSample();
 		int samples_per_second = reader->SamplesPerSecond();
 
-		int total_features = 16;
 		vector<float *> features;
 		dsp::MFCC mfcc;
 		mfcc.SetSamplingFrequency(samples_per_second);
-		mfcc.SetCepstralCoefficientsNumber(total_features);
-		mfcc.SetFrameLength(samples_per_second / 10 * 6); // 100 milliseconds
-		mfcc.SetFrameShift(samples_per_second / 20 * 2);
-		//mfcc.SetFFTFrameLength(1024);
+		mfcc.SetCepstralCoefficientsNumber(cepstrum_coefficients);
+		mfcc.SetFrameLength(frame_length);
+		mfcc.SetFrameShift(frame_shift);
 		mfcc.SetMelFilterBankSize(mel_filter_bank_size);
-		//mfcc.SetFFTFrameLength(4096);
 		mfcc.SetFFTFrameLength(fft_length);
 		mfcc.SetNoCoefficientZero(true);
 		mfcc.Init();
@@ -125,9 +124,9 @@ int main(int argc, char* argv[])
 		cout.setf(ios::fixed,ios::floatfield);
 		cout.precision(6);
 		for (unsigned int i = 0; i < features.size(); ++i) {
-			for (int j = 0; j < total_features; ++j) {
+			for (int j = 0; j < cepstrum_coefficients; ++j) {
 				cout << features[i][j];
-				if (j != total_features - 1) {
+				if (j != cepstrum_coefficients - 1) {
 					cout << "\t";
 				}
 			}
@@ -216,7 +215,8 @@ int main(int argc, char* argv[])
 		}
 		ifstream file(argv[2], ios::in);
 		audiocapture::AudioController *ac = CreateAudioController(channels, bits_per_sample, samples_per_second);
-		asr_take01::OnlineFeatureExtractor feature_extractor(16, channels, bits_per_sample, samples_per_second, ac->BufferSize(), fft_length, mel_filter_bank_size);
+		asr_take01::OnlineFeatureExtractor feature_extractor(cepstrum_coefficients, channels, bits_per_sample, samples_per_second, 
+			ac->BufferSize(), fft_length, mel_filter_bank_size, frame_length, frame_shift, vectors_per_sample);
 		ac->AddRawAudioListener(&feature_extractor);
 		
 		int layer_count;
@@ -251,7 +251,23 @@ int main(int argc, char* argv[])
 		softcomputing::BackPropagationNetwork nn(layers, 1, activation_functions);
 		nn.SetWeights(weights);
 
-		asr_take01::FeatureListener *feature_listener = new asr_take01::CommandRecognizer(&nn);
+		vector<string> output_classes;
+		vector<vector<double> > output_values;
+		string class_name;
+		double vector_val;
+		for (int i = 0; i < layers[layers.size() - 1]; ++i) {
+			file >> class_name;
+			output_classes.push_back(class_name);
+			vector<double> class_vector;
+			for (int j = 0; j < layers[layers.size() - 1]; ++j) {
+				file >> vector_val;
+				class_vector.push_back(vector_val);
+			}
+			output_values.push_back(class_vector);
+		}
+
+		asr_take01::CommandRecognizer *feature_listener = new asr_take01::CommandRecognizer(&nn);
+		feature_listener->SetOutputClasses(output_classes, output_values);
 		feature_extractor.AddFeatureListener(feature_listener);
 		
 		int selection;
@@ -287,8 +303,7 @@ int main(int argc, char* argv[])
 		for (unsigned int i = 0; i < classes.size(); ++i) {
 			class_samples.push_back(reader.ClassSamples(classes[i]));
 		}
-		int features_per_sample = 11 * 16;
-		//int features_per_sample = 1 * 16;
+		int features_per_sample = vectors_per_sample * cepstrum_coefficients;
 		
 		// Normalize them all
 		double max_value = 30;
@@ -301,18 +316,21 @@ int main(int argc, char* argv[])
 		}
 
 		// 90, 45
-		vector<int> layers; layers.push_back(features_per_sample); layers.push_back(10); layers.push_back(5); layers.push_back(classes.size());
+		vector<int> layers; 
+		layers.push_back(features_per_sample); 
+		layers.push_back((features_per_sample + classes.size()) / 2); 
+		layers.push_back(layers[1] / 2);
+		layers.push_back(classes.size());
+		
 		softcomputing::BackPropagationNetwork nn(layers);
-		nn.SetLearningRate(0.9);
-		nn.SetMaxEpochs(10000);
-		nn.SetMaxError(0.001);
+		nn.SetLearningRate(0.1);
+		nn.SetMaxEpochs(1000000);
+		nn.SetMaxError(0.0001);
 		nn.SetMomentum(0.9);
 		//nn.SetQuiet(true);
 
 		vector<vector<double> > training_set;
 		vector<vector<double> > expected;
-		vector<double> expected_apagar; expected_apagar.push_back(0); expected_apagar.push_back(1); expected_apagar.push_back(0);
-		vector<double> expected_prender; expected_prender.push_back(0); expected_prender.push_back(0); expected_prender.push_back(1);
 		for (int i = 0; i < samples_per_class; ++i) {
 			for (unsigned int k = 0; k < class_samples.size(); ++k) {
 				training_set.push_back(class_samples[k][i]);
@@ -368,6 +386,14 @@ int main(int argc, char* argv[])
 				}
 				cout << endl;
 			}
+		}
+
+		for (unsigned int i = 0; i < classes.size(); ++i) {
+			cout << classes[i];
+			for (int j = 0; j < layers[layers.size() - 1]; ++j) {
+				cout << " " << (i == j? 1 : 0);
+			}
+			cout << endl;
 		}
 	}
 	return 0;
